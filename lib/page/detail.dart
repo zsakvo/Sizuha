@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sizuha/http/api/chapter.dart';
 import 'package:sizuha/http/api/detail.dart';
 import 'package:sizuha/util/render.dart';
@@ -15,6 +18,8 @@ class BookDetail extends StatefulWidget {
 
 class _BookDetailState extends State<BookDetail> {
   Future _future;
+  bool _isDownloading = false;
+  String _downloadHint = '正在读取数据……';
 
   @override
   void initState() {
@@ -158,16 +163,18 @@ class _BookDetailState extends State<BookDetail> {
                       bottom: 10,
                       child: Container(
                         margin:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                         height: 38,
-                        width: ScreenUtil.getScreenW(context) - 40,
+                        width: ScreenUtil.getScreenW(context) - 80,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Container(
-                                width: (ScreenUtil.getInstance().screenWidth -
-                                        40) *
-                                    0.45,
+                                width: _isDownloading
+                                    ? 0
+                                    : (ScreenUtil.getInstance().screenWidth -
+                                            80) *
+                                        0.45,
                                 height: 38,
                                 decoration: BoxDecoration(
                                     border: Border.all(
@@ -185,20 +192,54 @@ class _BookDetailState extends State<BookDetail> {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(50))),
                                   child: Text(
-                                    'TXT',
+                                    "TXT",
                                     style: TextStyle(
                                         fontWeight: FontWeight.normal,
                                         color: HexColor('#222222')),
                                   ),
                                   minWidth: double.infinity,
                                   onPressed: () async {
-                                    _fetchTXT(data['chapters']);
+                                    _fetchTXT(data);
                                   },
                                 )),
                             Container(
-                                width: (ScreenUtil.getInstance().screenWidth -
-                                        48) *
-                                    0.45,
+                                width: _isDownloading
+                                    ? (ScreenUtil.getInstance().screenWidth -
+                                        80)
+                                    : 0,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: HexColor('#8c8c8c')
+                                            .withOpacity(0.1),
+                                        width: 1),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50))),
+                                child: FlatButton(
+                                  color: Theme.of(context)
+                                      .scaffoldBackgroundColor
+                                      .withOpacity(0.1),
+                                  shape: RoundedRectangleBorder(
+                                      side: BorderSide.none,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(50))),
+                                  child: Text(
+                                    _downloadHint,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: HexColor('#2196f3')),
+                                  ),
+                                  minWidth: double.infinity,
+                                  onPressed: () async {
+                                    _fetchTXT(data);
+                                  },
+                                )),
+                            Container(
+                                width: _isDownloading
+                                    ? 0
+                                    : (ScreenUtil.getInstance().screenWidth -
+                                            80) *
+                                        0.45,
                                 height: 38,
                                 decoration: BoxDecoration(
                                     color: HexColor('#ffffff'),
@@ -211,7 +252,7 @@ class _BookDetailState extends State<BookDetail> {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(50))),
                                   child: Text(
-                                    'EPUB',
+                                    "EPUB",
                                     style: TextStyle(
                                         fontWeight: FontWeight.normal,
                                         color: HexColor('#ffffff')),
@@ -231,15 +272,32 @@ class _BookDetailState extends State<BookDetail> {
         ));
   }
 
-  _fetchTXT(chapters) async {
-    chapters = List.from(chapters);
-    LogUtil.v(chapters);
+  _fetchTXT(data) async {
+    setState(() {
+      _isDownloading = true;
+    });
+    int i = 0;
+    List chapters = List.from(data['chapters']);
     var content = '';
     await Future.forEach(chapters, (item) async {
       var url = item['url'].toString();
+      var name = item['name'].toString();
       var res = await ApiChapter.fetch(url);
-      content += (res + "\n\n\n");
+      content += (name + '\n\n' + res + "\n\n\n");
+      setState(() {
+        _downloadHint = '正在下载 $i / ${chapters.length}';
+      });
+      i++;
     });
-    LogUtil.v(content);
+    setState(() {
+      _downloadHint = '正在写出数据……';
+    });
+    String dir = (await getDownloadsDirectory()).path;
+    File file =
+        new File('$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+    file.writeAsString(content);
+    setState(() {
+      _downloadHint = '下载成功！';
+    });
   }
 }

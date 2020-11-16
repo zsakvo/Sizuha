@@ -41,39 +41,42 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchBar() {
     return Container(
-      margin: EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 8),
-      decoration: BoxDecoration(
-          color: HexColor('#F4F4F5'),
-          borderRadius: BorderRadius.all(
-            Radius.circular(8),
-          )),
-      // width: ScreenUtil.getInstance().screenWidth - 68,
-      child: TextField(
-        cursorColor: HexColor('#222222'),
-        style: TextStyle(
-          fontSize: 12,
-          color: HexColor('#222222'),
-        ),
-        decoration: InputDecoration(
-          isDense: true,
-          hintText: '搜索书名或作者',
-          hintStyle: TextStyle(fontSize: 12, color: HexColor('#C5C5C6')),
-          border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-              borderRadius: BorderRadius.all(Radius.circular(8))),
-          contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-        ),
-        onSubmitted: (String str) {
-          LogUtil.v(str);
-        },
-      ),
-    );
+        padding: EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 20),
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Container(
+          decoration: BoxDecoration(
+              color: HexColor('#F4F4F5'),
+              borderRadius: BorderRadius.all(
+                Radius.circular(8),
+              )),
+          // width: ScreenUtil.getInstance().screenWidth - 68,
+          child: TextField(
+            cursorColor: HexColor('#222222'),
+            style: TextStyle(
+              fontSize: 12,
+              color: HexColor('#222222'),
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: '搜索书名或作者',
+              hintStyle: TextStyle(fontSize: 12, color: HexColor('#C5C5C6')),
+              border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.all(Radius.circular(8))),
+              contentPadding:
+                  EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+            ),
+            onSubmitted: (String str) {
+              LogUtil.v(str);
+            },
+          ),
+        ));
   }
 
   Widget _buildRankList() {
     return Container(
         padding: EdgeInsets.symmetric(horizontal: 12),
-        height: ScreenUtil.getScreenH(context) - 125,
+        height: ScreenUtil.getScreenH(context) - 140,
         child: ListView(
           children: lists.map((list) {
             return Column(

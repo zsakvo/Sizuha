@@ -1,4 +1,3 @@
-import 'package:flustars/flustars.dart';
 import 'package:html/dom.dart';
 
 class Decrypt {
@@ -39,7 +38,7 @@ class Decrypt {
     key = _base64(client).split(RegExp('[A-Z]+%'));
     var content = html.getElementById('content');
     var decodeStr = _init(content).toString();
-    LogUtil.v(decodeStr);
+    // LogUtil.v(decodeStr.substring(0, 200));
     return decodeStr;
   }
 
