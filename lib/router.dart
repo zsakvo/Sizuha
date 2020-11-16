@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sizuha/page/detail.dart';
 import 'package:sizuha/page/home.dart';
+import 'package:sizuha/page/search.dart';
 
 final routes = {
   '/': (context, {arguments}) => HomePage(),
-  '/detail': (context, {arguments}) => BookDetail(arguments: arguments),
+  '/detail': (context, {arguments}) => BookDetailPage(arguments: arguments),
+  '/search': (context, {arguments}) => SearchResultPage(arguments: arguments),
 };
 
 // 处理参数传递

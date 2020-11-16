@@ -9,14 +9,14 @@ import 'package:sizuha/http/api/chapter.dart';
 import 'package:sizuha/http/api/detail.dart';
 import 'package:sizuha/util/render.dart';
 
-class BookDetail extends StatefulWidget {
+class BookDetailPage extends StatefulWidget {
   final Map arguments;
-  BookDetail({Key key, this.arguments});
+  BookDetailPage({Key key, this.arguments});
   @override
   _BookDetailState createState() => _BookDetailState();
 }
 
-class _BookDetailState extends State<BookDetail> {
+class _BookDetailState extends State<BookDetailPage> {
   Future _future;
   bool _isDownloading = false;
   String _downloadHint = '正在读取数据……';

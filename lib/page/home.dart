@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchBar() {
     return Container(
-        padding: EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 20),
+        padding: EdgeInsets.only(left: 12, right: 12, top: 4, bottom: 24),
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Container(
           decoration: BoxDecoration(
@@ -53,13 +53,13 @@ class _HomePageState extends State<HomePage> {
           child: TextField(
             cursorColor: HexColor('#222222'),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               color: HexColor('#222222'),
             ),
             decoration: InputDecoration(
               isDense: true,
               hintText: '搜索书名或作者',
-              hintStyle: TextStyle(fontSize: 12, color: HexColor('#C5C5C6')),
+              hintStyle: TextStyle(fontSize: 14, color: HexColor('#C5C5C6')),
               border: OutlineInputBorder(
                   borderSide: BorderSide.none,
                   borderRadius: BorderRadius.all(Radius.circular(8))),
@@ -67,7 +67,9 @@ class _HomePageState extends State<HomePage> {
                   EdgeInsets.symmetric(vertical: 14, horizontal: 18),
             ),
             onSubmitted: (String str) {
-              LogUtil.v(str);
+              Navigator.of(context).pushNamed('/search', arguments: {
+                'key': str,
+              });
             },
           ),
         ));
@@ -75,7 +77,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRankList() {
     return Container(
-        padding: EdgeInsets.symmetric(horizontal: 12),
         height: ScreenUtil.getScreenH(context) - 140,
         child: ListView(
           children: lists.map((list) {
@@ -102,55 +103,60 @@ class _HomePageState extends State<HomePage> {
                     ],
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 10),
+                  padding:
+                      EdgeInsets.only(top: 0, bottom: 10, left: 12, right: 12),
                 ),
                 Column(
-                  children: List.from(list['books']).map((book) {
-                    return InkWell(
-                      child: Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            CachedNetworkImage(
-                              imageUrl: book['cover'],
-                              width: 72,
-                              height: 96,
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 18),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    book['name'],
-                                    style: TextStyle(
-                                        color: HexColor('#222222'),
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                        height: 2.0),
-                                  ),
-                                  Text(
-                                    book['author'],
-                                    style: TextStyle(
-                                      color: HexColor('#8c8c8c'),
-                                      fontSize: 14,
-                                    ),
-                                  )
-                                ],
+                  children: [
+                    ...List.from(list['books']).map((book) {
+                      return InkWell(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 16),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: book['cover'],
+                                width: 72,
+                                height: 96,
                               ),
-                            )
-                          ],
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 18),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      book['name'],
+                                      style: TextStyle(
+                                          color: HexColor('#222222'),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          height: 2.0),
+                                    ),
+                                    Text(
+                                      book['author'],
+                                      style: TextStyle(
+                                        color: HexColor('#8c8c8c'),
+                                        fontSize: 14,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                      onTap: () {
-                        Navigator.of(context).pushNamed('/detail', arguments: {
-                          'url': book['url'],
-                        });
-                      },
-                    );
-                  }).toList(),
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushNamed('/detail', arguments: {
+                            'url': book['url'],
+                          });
+                        },
+                      );
+                    }).toList(),
+                    SizedBox(height: 10),
+                  ],
                 )
               ],
             );
