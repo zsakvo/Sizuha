@@ -298,55 +298,126 @@ class _BookDetailState extends State<BookDetailPage> {
     setState(() {
       _isDownloading = true;
     });
-    int i = 0;
-    List chapters = List.from(data['chapters']);
-
+    List chapters = [];
+    List tmp = List.from(data['chapters']);
+    for (int i = 0; i < tmp.length; i++) {
+      var t = tmp[i];
+      t['index'] = i.toString();
+      chapters.add(t);
+    }
     int perChapter = (chapters.length / 5).floor();
-    List<List> chapterList = [];
-    int takeNum = 0;
-    chapters.forEach((e) {
-      List list = [];
-      if (chapters.length > perChapter) {
-        list = chapters.getRange(takeNum, perChapter - 1).toList();
-        takeNum += perChapter;
-      } else {
-        list = chapters.getRange(takeNum, chapters.length - 1).toList();
-        takeNum += (chapters.length - 1);
-      }
-      chapterList.add(list);
-    });
+    List chapterList = [];
+    for (int i = 0; i < chapters.length; i += perChapter) {
+      chapterList.add(chapters
+          .getRange(
+              i,
+              i + perChapter <= chapters.length - 1
+                  ? i + perChapter
+                  : chapters.length)
+          .toList());
+    }
+    int t = 0;
     LogUtil.v(chapterList);
+    List content = List(tmp.length);
+    chapterList.forEach((list) {
+      Future.forEach(list, (item) async {
+        var url = item['url'].toString();
+        var name = item['name'].toString();
+        var index = item['index'];
+        var res = await ApiChapter.fetch(url);
+        var c = (name + '\n\n' + res + "\n\n\n");
+        content[int.parse(index)] = c;
+        t++;
+        setState(() {
+          _downloadHint = '正在下载 $t / ${tmp.length}';
+        });
+        if (t >= tmp.length) {
+          setState(() {
+            _downloadHint = '正在写出数据……';
+          });
+          String dir;
+          File file;
+          if (Platform.isAndroid) {
+            dir = await ExtStorage.getExternalStoragePublicDirectory(
+                ExtStorage.DIRECTORY_DOCUMENTS);
+            LogUtil.v(dir);
+            file = new File(
+                '$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+          } else if (Platform.isMacOS) {
+            dir = (await getDownloadsDirectory()).path;
+            file = new File(
+                '$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+          }
+          file.writeAsString(content.join());
+          setState(() {
+            _downloadHint = '下载成功！';
+          });
+        }
+      });
+    });
+  }
 
-    // var content = '';
-    // await Future.forEach(chapters, (item) async {
-    //   var url = item['url'].toString();
-    //   var name = item['name'].toString();
-    //   var res = await ApiChapter.fetch(url);
-    //   content += (name + '\n\n' + res + "\n\n\n");
-    //   setState(() {
-    //     _downloadHint = '正在下载 $i / ${chapters.length}';
-    //   });
-    //   i++;
-    // });
-    // setState(() {
-    //   _downloadHint = '正在写出数据……';
-    // });
-    // String dir;
-    // File file;
-    // if (Platform.isAndroid) {
-    //   dir = await ExtStorage.getExternalStoragePublicDirectory(
-    //       ExtStorage.DIRECTORY_DOCUMENTS);
-    //   LogUtil.v(dir);
-    //   file =
-    //       new File('$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
-    // } else if (Platform.isMacOS) {
-    //   dir = (await getDownloadsDirectory()).path;
-    //   file =
-    //       new File('$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
-    // }
-    // file.writeAsString(content);
-    // setState(() {
-    //   _downloadHint = '下载成功！';
-    // });
+  _fetchEPUB(data) async {
+    _permissionRequest();
+    setState(() {
+      _isDownloading = true;
+    });
+    List chapters = [];
+    List tmp = List.from(data['chapters']);
+    for (int i = 0; i < tmp.length; i++) {
+      var t = tmp[i];
+      t['index'] = i.toString();
+      chapters.add(t);
+    }
+    int perChapter = (chapters.length / 5).floor();
+    List chapterList = [];
+    for (int i = 0; i < chapters.length; i += perChapter) {
+      chapterList.add(chapters
+          .getRange(
+              i,
+              i + perChapter <= chapters.length - 1
+                  ? i + perChapter
+                  : chapters.length)
+          .toList());
+    }
+    int t = 0;
+    LogUtil.v(chapterList);
+    List content = List(tmp.length);
+    chapterList.forEach((list) {
+      Future.forEach(list, (item) async {
+        var url = item['url'].toString();
+        var name = item['name'].toString();
+        var index = item['index'];
+        var res = await ApiChapter.fetch(url);
+        var c = (name + '\n\n' + res + "\n\n\n");
+        content[int.parse(index)] = c;
+        t++;
+        setState(() {
+          _downloadHint = '正在下载 $t / ${tmp.length}';
+        });
+        if (t >= tmp.length) {
+          setState(() {
+            _downloadHint = '正在写出数据……';
+          });
+          String dir;
+          File file;
+          if (Platform.isAndroid) {
+            dir = await ExtStorage.getExternalStoragePublicDirectory(
+                ExtStorage.DIRECTORY_DOCUMENTS);
+            LogUtil.v(dir);
+            file = new File(
+                '$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+          } else if (Platform.isMacOS) {
+            dir = (await getDownloadsDirectory()).path;
+            file = new File(
+                '$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+          }
+          file.writeAsString(content.join());
+          setState(() {
+            _downloadHint = '下载成功！';
+          });
+        }
+      });
+    });
   }
 }
