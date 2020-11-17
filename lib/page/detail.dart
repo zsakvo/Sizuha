@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_permission_validator/easy_permission_validator.dart';
+import 'package:ext_storage/ext_storage.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -145,11 +147,12 @@ class _BookDetailState extends State<BookDetailPage> {
                               Text(
                                 data['intro'],
                                 overflow: TextOverflow.ellipsis,
-                                maxLines:
-                                    ((ScreenUtil.getScreenH(context) - 400) /
-                                            15 /
-                                            1.3)
-                                        .floor(),
+                                maxLines: ((ScreenUtil.getScreenH(context) -
+                                            ScreenUtil.getStatusBarH(context) -
+                                            400) /
+                                        15 /
+                                        1.3)
+                                    .floor(),
                                 style: TextStyle(
                                     color: HexColor('8c8c8c'), fontSize: 14),
                               )
@@ -231,7 +234,9 @@ class _BookDetailState extends State<BookDetailPage> {
                                   ),
                                   minWidth: double.infinity,
                                   onPressed: () async {
-                                    _fetchTXT(data);
+                                    setState(() {
+                                      _isDownloading = false;
+                                    });
                                   },
                                 )),
                             Container(
@@ -258,7 +263,12 @@ class _BookDetailState extends State<BookDetailPage> {
                                         color: HexColor('#ffffff')),
                                   ),
                                   minWidth: double.infinity,
-                                  onPressed: () async {},
+                                  onPressed: () async {
+                                    var path = await ExtStorage
+                                        .getExternalStoragePublicDirectory(
+                                            ExtStorage.DIRECTORY_DOWNLOADS);
+                                    LogUtil.v(path);
+                                  },
                                 )),
                           ],
                         ),
@@ -272,32 +282,71 @@ class _BookDetailState extends State<BookDetailPage> {
         ));
   }
 
+  _permissionRequest() async {
+    final permissionValidator = EasyPermissionValidator(
+      context: context,
+      appName: 'Easy Permission Validator',
+    );
+    var result = await permissionValidator.storage();
+    if (result) {
+      // Do something;
+    }
+  }
+
   _fetchTXT(data) async {
+    _permissionRequest();
     setState(() {
       _isDownloading = true;
     });
     int i = 0;
     List chapters = List.from(data['chapters']);
-    var content = '';
-    await Future.forEach(chapters, (item) async {
-      var url = item['url'].toString();
-      var name = item['name'].toString();
-      var res = await ApiChapter.fetch(url);
-      content += (name + '\n\n' + res + "\n\n\n");
-      setState(() {
-        _downloadHint = '正在下载 $i / ${chapters.length}';
-      });
-      i++;
+
+    int perChapter = (chapters.length / 5).floor();
+    List<List> chapterList = [];
+    int takeNum = 0;
+    chapters.forEach((e) {
+      List list = [];
+      if (chapters.length > perChapter) {
+        list = chapters.getRange(takeNum, perChapter - 1).toList();
+        takeNum += perChapter;
+      } else {
+        list = chapters.getRange(takeNum, chapters.length - 1).toList();
+        takeNum += (chapters.length - 1);
+      }
+      chapterList.add(list);
     });
-    setState(() {
-      _downloadHint = '正在写出数据……';
-    });
-    String dir = (await getDownloadsDirectory()).path;
-    File file =
-        new File('$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
-    file.writeAsString(content);
-    setState(() {
-      _downloadHint = '下载成功！';
-    });
+    LogUtil.v(chapterList);
+
+    // var content = '';
+    // await Future.forEach(chapters, (item) async {
+    //   var url = item['url'].toString();
+    //   var name = item['name'].toString();
+    //   var res = await ApiChapter.fetch(url);
+    //   content += (name + '\n\n' + res + "\n\n\n");
+    //   setState(() {
+    //     _downloadHint = '正在下载 $i / ${chapters.length}';
+    //   });
+    //   i++;
+    // });
+    // setState(() {
+    //   _downloadHint = '正在写出数据……';
+    // });
+    // String dir;
+    // File file;
+    // if (Platform.isAndroid) {
+    //   dir = await ExtStorage.getExternalStoragePublicDirectory(
+    //       ExtStorage.DIRECTORY_DOCUMENTS);
+    //   LogUtil.v(dir);
+    //   file =
+    //       new File('$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+    // } else if (Platform.isMacOS) {
+    //   dir = (await getDownloadsDirectory()).path;
+    //   file =
+    //       new File('$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+    // }
+    // file.writeAsString(content);
+    // setState(() {
+    //   _downloadHint = '下载成功！';
+    // });
   }
 }

@@ -29,13 +29,17 @@ dependencies:
   cupertino_icons: ^1.0.0
   one_context:
   hexcolor:
+  ext_storage:
   html: ^0.14.0+4
+  easy_permission_validator: ^2.0.1
   flustars: ^0.3.3
   dio: ^3.0.9
   sp_util: ^1.0.1
   cached_network_image: ^2.2.0+1
   material_floating_search_bar: ^0.2.3
   path_provider: ^1.6.24
+  flutter_statusbar_manager: ^2.0.0
+  flutter_archive: ^1.0.3
 
 dev_dependencies:
   flutter_test:

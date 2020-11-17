@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_statusbar_manager/flutter_statusbar_manager.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:sizuha/http/api/index.dart';
 
@@ -16,6 +19,17 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() async {
+    if (Platform.isAndroid) {
+      await FlutterStatusbarManager.setColor(
+          Theme.of(context).scaffoldBackgroundColor,
+          animated: true);
+      await FlutterStatusbarManager.setStyle(StatusBarStyle.DARK_CONTENT);
+      await FlutterStatusbarManager.setNavigationBarColor(
+          Theme.of(context).scaffoldBackgroundColor,
+          animated: true);
+      await FlutterStatusbarManager.setNavigationBarStyle(
+          NavigationBarStyle.LIGHT);
+    }
     super.didChangeDependencies();
     lists = await ApiIndex.fetch();
     setState(() {});
@@ -31,6 +45,7 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(color: HexColor('#222222')),
           ),
           centerTitle: false,
+          brightness: Brightness.light,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
         ),
@@ -77,7 +92,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRankList() {
     return Container(
-        height: ScreenUtil.getScreenH(context) - 140,
+        height: ScreenUtil.getScreenH(context) -
+            ScreenUtil.getStatusBarH(context) -
+            140,
         child: ListView(
           children: lists.map((list) {
             return Column(
@@ -91,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(
                             color: HexColor('#222222'),
                             fontSize: 14,
-                            fontWeight: FontWeight.w500),
+                            fontWeight: FontWeight.bold),
                       ),
                       ColorFiltered(
                           colorFilter: ColorFilter.mode(
