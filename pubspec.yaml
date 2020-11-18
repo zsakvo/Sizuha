@@ -40,6 +40,7 @@ dependencies:
   path_provider: ^1.6.24
   flutter_statusbar_manager: ^2.0.0
   archive: ^2.0.13
+  pull_to_refresh: ^1.6.3
 
 dev_dependencies:
   flutter_test:

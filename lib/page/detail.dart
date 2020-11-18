@@ -330,7 +330,13 @@ class _BookDetailState extends State<BookDetailPage> {
         var url = item['url'].toString();
         var name = item['name'].toString();
         var index = item['index'];
-        var res = await ApiChapter.fetch(url);
+        var res = '';
+        try {
+          res = await ApiChapter.fetch(url);
+        } catch (err) {
+          LogUtil.v(err);
+          res = await ApiChapter.fetch(url);
+        }
         var c = (name + '\n\n' + res + "\n\n\n");
         content[int.parse(index)] = c;
         t++;
@@ -458,10 +464,14 @@ class _BookDetailState extends State<BookDetailPage> {
         String u = url.split('/')[3];
         u = u.substring(0, u.length - 4);
         var name = item['name'].toString();
-        // var index = item['index'];
-        var res = await ApiChapter.fetch(url);
+        var res = '';
+        try {
+          res = await ApiChapter.fetch(url);
+        } catch (err) {
+          LogUtil.v(err);
+          res = await ApiChapter.fetch(url);
+        }
         var c = '''<p>$res</p>''';
-        // content[int.parse(index)] = c;
         var cList = c.split('\n');
         var str = '';
         cList.forEach((element) {

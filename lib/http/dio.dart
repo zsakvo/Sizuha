@@ -65,7 +65,6 @@ class DioUtil {
     Options options,
     @required String tag,
   }) async {
-    LogUtil.v(url, tag: 'dio get 路径');
     return _request(
       url: url,
       params: params,

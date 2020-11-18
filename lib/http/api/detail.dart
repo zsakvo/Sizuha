@@ -1,3 +1,4 @@
+import 'package:flustars/flustars.dart';
 import 'package:html/dom.dart';
 
 import '../dio.dart';
@@ -30,10 +31,15 @@ class ApiDetail {
         }
       }
       Element dir = body.querySelector('#dir');
-      dir.getElementsByTagName('dd').forEach((element) {
-        var name = element.text;
-        var url = element.getElementsByTagName('a')[0].attributes['href'];
-        chapters.add({'name': name, 'url': url});
+      List children = dir.children;
+      children.forEach((element) {
+        try {
+          var name = element.text;
+          var url = element.getElementsByTagName('a')[0].attributes['href'];
+          chapters.add({'name': name, 'url': url});
+        } catch (err) {
+          LogUtil.v(err);
+        }
       });
       return {
         'name': name,
