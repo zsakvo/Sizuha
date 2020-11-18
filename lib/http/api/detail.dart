@@ -32,13 +32,18 @@ class ApiDetail {
       }
       Element dir = body.querySelector('#dir');
       List children = dir.children;
+      String prefix = '';
       children.forEach((element) {
         try {
           var name = element.text;
           var url = element.getElementsByTagName('a')[0].attributes['href'];
-          chapters.add({'name': name, 'url': url});
+          chapters.add({
+            'name': prefix.length == 0 ? name : prefix + ' ' + name,
+            'url': url
+          });
         } catch (err) {
-          LogUtil.v(err);
+          prefix = element.text.toString().replaceAll('&', '—');
+          LogUtil.v(prefix);
         }
       });
       return {
