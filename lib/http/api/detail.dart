@@ -42,7 +42,7 @@ class ApiDetail {
             'url': url
           });
         } catch (err) {
-          prefix = element.text.toString().replaceAll('&', '—');
+          prefix = element.text.toString().replaceAll('&', '&#38;');
           LogUtil.v(prefix);
         }
       });
