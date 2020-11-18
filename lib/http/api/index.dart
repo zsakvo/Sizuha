@@ -48,7 +48,7 @@ class ApiIndex {
         list.add({'title': titles[i], 'books': books});
         i++;
       });
-      return list;
+      return [list.first];
     });
   }
 }

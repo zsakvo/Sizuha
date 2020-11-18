@@ -443,7 +443,6 @@ class _BookDetailState extends State<BookDetailPage> {
           .toList());
     }
     int t = 0;
-    List content = List(tmp.length);
     chapterList.forEach((list) {
       Future.forEach(list, (item) async {
         var url = item['url'].toString();
@@ -471,25 +470,21 @@ class _BookDetailState extends State<BookDetailPage> {
             _downloadHint = '正在写出数据……';
           });
           String dir;
-          File file;
+          String file;
           if (Platform.isAndroid) {
             dir = await ExtStorage.getExternalStoragePublicDirectory(
                 ExtStorage.DIRECTORY_DOCUMENTS);
             LogUtil.v(dir);
-            file = new File(
-                '$dir/${data['name'].trim()}-${data['author'].trim()}.epub');
+            file = '$dir/${data['name'].trim()}-${data['author'].trim()}.epub';
           } else if (Platform.isMacOS) {
             dir = (await getDownloadsDirectory()).path;
-            file = new File(
-                '$dir/${data['name'].trim()}-${data['author'].trim()}.epub');
+            file = '$dir/${data['name'].trim()}-${data['author'].trim()}.epub';
           }
           final dataDir = Directory('$tmpDirPath');
 
           // Manually create a zip of a directory and individual files.
           var encoder = ZipFileEncoder();
-          encoder.zipDirectory(dataDir,
-              filename:
-                  '$dir/${data['name'].trim()}-${data['author'].trim()}.epub');
+          encoder.zipDirectory(dataDir, filename: file);
           setState(() {
             _downloadHint = '下载成功！';
           });

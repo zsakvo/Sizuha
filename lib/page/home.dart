@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchBar() {
     return Container(
-        padding: EdgeInsets.only(left: 12, right: 12, top: 4, bottom: 24),
+        padding: EdgeInsets.only(left: 12, right: 12, top: 4, bottom: 20),
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Container(
           decoration: BoxDecoration(
@@ -94,35 +94,35 @@ class _HomePageState extends State<HomePage> {
     return Container(
         height: ScreenUtil.getScreenH(context) -
             ScreenUtil.getStatusBarH(context) -
-            140,
+            180,
         child: ListView(
           children: lists.map((list) {
             return Column(
               children: [
-                Container(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        list['title'],
-                        style: TextStyle(
-                            color: HexColor('#222222'),
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      ColorFiltered(
-                          colorFilter: ColorFilter.mode(
-                              HexColor('#8c8c8c'), BlendMode.srcIn),
-                          child: Image.asset(
-                            'assets/img/arrow-right.png',
-                            width: 24,
-                          ))
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  ),
-                  padding:
-                      EdgeInsets.only(top: 0, bottom: 10, left: 12, right: 12),
-                ),
+                // Container(
+                //   child: Row(
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     children: [
+                //       Text(
+                //         list['title'],
+                //         style: TextStyle(
+                //             color: HexColor('#222222'),
+                //             fontSize: 14,
+                //             fontWeight: FontWeight.bold),
+                //       ),
+                //       ColorFiltered(
+                //           colorFilter: ColorFilter.mode(
+                //               HexColor('#8c8c8c'), BlendMode.srcIn),
+                //           child: Image.asset(
+                //             'assets/img/arrow-right.png',
+                //             width: 24,
+                //           ))
+                //     ],
+                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   ),
+                //   padding:
+                //       EdgeInsets.only(top: 0, bottom: 10, left: 12, right: 12),
+                // ),
                 Column(
                   children: [
                     ...List.from(list['books']).map((book) {

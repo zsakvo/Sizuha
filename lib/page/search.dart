@@ -17,14 +17,15 @@ class _SearchResultPageState extends State<SearchResultPage> {
   List books = [];
   @override
   void initState() {
-    searchKey = widget.arguments['key'];
-    LogUtil.v(searchKey);
     super.initState();
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+  }
+
+  searchBook(searchKey) async {
     books = await ApiSearch.fetch(searchKey, 1);
     setState(() {});
   }
@@ -32,24 +33,6 @@ class _SearchResultPageState extends State<SearchResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(
-            '搜索“$searchKey”',
-            style: TextStyle(color: HexColor('#222222')),
-          ),
-          centerTitle: false,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          elevation: 0,
-          brightness: Brightness.light,
-          iconTheme: IconThemeData(
-            color: Colors.black, //change your color here
-          ),
-          leading: InkWell(
-            child: Icon(Icons.arrow_back),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          )),
       body: Container(
         height: ScreenUtil.getScreenH(context) - ScreenUtil().appBarHeight,
         child: ListView(
