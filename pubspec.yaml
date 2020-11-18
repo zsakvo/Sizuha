@@ -39,7 +39,7 @@ dependencies:
   material_floating_search_bar: ^0.2.3
   path_provider: ^1.6.24
   flutter_statusbar_manager: ^2.0.0
-  flutter_archive: ^1.0.3
+  archive: ^2.0.13
 
 dev_dependencies:
   flutter_test:

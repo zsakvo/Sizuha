@@ -4,7 +4,7 @@ class EpubUtil {
 <package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/" unique-identifier="bookid" version="2.0">  
   <metadata xmlns:opf="http://www.idpf.org/2007/opf">  
     <dc:title>&title</dc:title>  
-    <dc:creator>&creator/dc:creator>  
+    <dc:creator>&creator</dc:creator>  
     <dc:description>&description</dc:description>  
     <dc:language>zh-cn</dc:language>  
     <dc:date/>  
@@ -77,7 +77,7 @@ class EpubUtil {
   </head>
   <body>
     <div>
-      <h1>&name</h1>
+      <h1>&title</h1>
       <h2>作者：&author</h2>
       <ul>
         <li>
@@ -161,7 +161,7 @@ a[href] {
     <meta content="&generator" name="dtb:generator"/>   
   </head>  
   <docTitle> 
-    <text>&name</text> 
+    <text>&title</text> 
   </docTitle>  
   <docAuthor> 
     <text>&author</text> 
@@ -177,7 +177,7 @@ a[href] {
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
   <head>
-    <title>&name</title>
+    <title>&title</title>
     <link href="stylesheet.css" type="text/css" rel="stylesheet" />
     <style type="text/css">
       @page {

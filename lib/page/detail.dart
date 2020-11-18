@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:archive/archive_io.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_permission_validator/easy_permission_validator.dart';
 import 'package:ext_storage/ext_storage.dart';
@@ -9,6 +10,7 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sizuha/http/api/chapter.dart';
 import 'package:sizuha/http/api/detail.dart';
+import 'package:sizuha/util/epub.dart';
 import 'package:sizuha/util/render.dart';
 
 class BookDetailPage extends StatefulWidget {
@@ -264,10 +266,7 @@ class _BookDetailState extends State<BookDetailPage> {
                                   ),
                                   minWidth: double.infinity,
                                   onPressed: () async {
-                                    var path = await ExtStorage
-                                        .getExternalStoragePublicDirectory(
-                                            ExtStorage.DIRECTORY_DOWNLOADS);
-                                    LogUtil.v(path);
+                                    _fetchEPUB(data);
                                   },
                                 )),
                           ],
@@ -369,6 +368,69 @@ class _BookDetailState extends State<BookDetailPage> {
       t['index'] = i.toString();
       chapters.add(t);
     }
+    //开始准备环境
+    String opfHrefs = '';
+    String opfIdrefs = '';
+    String tocNcxNavs = '';
+    String catalogLis = '';
+    int it = 1;
+    tmp.forEach((t) {
+      String url = t['url'];
+      String u = url.split('/')[3];
+      u = u.substring(0, u.length - 4);
+      opfHrefs +=
+          '''<item href="chapter_$u.xhtml" id="id$u" media-type="application/xhtml+xml"/>''';
+      opfIdrefs += '''<itemref idref="id$u"/>''';
+      tocNcxNavs +=
+          '''<navPoint id="chapter_$u" playOrder="$it"><navLabel><text>${t['name']}</text></navLabel><content src="chapter_$u.xhtml"/></navPoint>''';
+      catalogLis +=
+          '''<li class="catalog"><a href="chapter_$u.xhtml">${t['name']}</a></li>''';
+      it++;
+    });
+    String contentOpf = EpubUtil.contentOpf
+        .replaceAll('&title', data['name'])
+        .replaceAll('&creator', data['author'])
+        .replaceAll('&description', data['name'])
+        .replaceAll('&contributor', 'Sizuha')
+        .replaceAll('&publisher', '99csw.com')
+        .replaceAll('&contributor', '99藏书网')
+        .replaceAll('&subject', 'Sizuha')
+        .replaceAll('&hrefs', opfHrefs)
+        .replaceAll('&ids', opfIdrefs);
+    String tocNcx = EpubUtil.tocNcx
+        .replaceAll('&title', data['name'])
+        .replaceAll('&author', data['author'])
+        .replaceAll('&generator', 'Sizuha')
+        .replaceAll('&navs', tocNcxNavs);
+    String catalog = EpubUtil.catalog
+        .replaceAll('&hrefs', opfHrefs)
+        .replaceAll('&title', data['name'])
+        .replaceAll('&lis', catalogLis);
+    String page = EpubUtil.page
+        .replaceAll('&title', data['name'])
+        .replaceAll('&author', data['author'])
+        .replaceAll('&intro', data['intro']);
+
+    //准备文件
+
+    String dir = (await getApplicationSupportDirectory()).path;
+    Directory tmpDir = new Directory('$dir/${data['name'].trim()}');
+    if (await tmpDir.exists()) tmpDir.deleteSync(recursive: true);
+    tmpDir.createSync(recursive: true);
+    String tmpDirPath = tmpDir.path;
+    LogUtil.v(tmpDirPath);
+    File('$tmpDirPath/content.opf').writeAsString(contentOpf);
+    File('$tmpDirPath/catalog.xhtml').writeAsString(catalog);
+    File('$tmpDirPath/mimetype').writeAsString(EpubUtil.mimetype);
+    File('$tmpDirPath/stylesheet.css').writeAsString(EpubUtil.style);
+    File('$tmpDirPath/toc.ncx').writeAsString(tocNcx);
+    File('$tmpDirPath/page.xhtml').writeAsString(page);
+    await Directory('$tmpDirPath/META-INF').exists()
+        ? Directory('$tmpDirPath/META-INF').deleteSync(recursive: true)
+        : Directory('$tmpDirPath/META-INF').createSync(recursive: true);
+    File('$tmpDirPath/META-INF/container.xml')
+        .writeAsString(EpubUtil.container);
+
     int perChapter = (chapters.length / 5).floor();
     List chapterList = [];
     for (int i = 0; i < chapters.length; i += perChapter) {
@@ -381,16 +443,25 @@ class _BookDetailState extends State<BookDetailPage> {
           .toList());
     }
     int t = 0;
-    LogUtil.v(chapterList);
     List content = List(tmp.length);
     chapterList.forEach((list) {
       Future.forEach(list, (item) async {
         var url = item['url'].toString();
+        String u = url.split('/')[3];
+        u = u.substring(0, u.length - 4);
         var name = item['name'].toString();
-        var index = item['index'];
+        // var index = item['index'];
         var res = await ApiChapter.fetch(url);
-        var c = (name + '\n\n' + res + "\n\n\n");
-        content[int.parse(index)] = c;
+        var c = '''<p>$res</p>''';
+        // content[int.parse(index)] = c;
+        var cList = c.split('\n');
+        var str = '';
+        cList.forEach((element) {
+          str += '''<p>$element</p>''';
+        });
+        String content =
+            EpubUtil.chapter.replaceAll('&title', name).replaceAll('&ps', str);
+        File('$tmpDirPath/chapter_$u.xhtml').writeAsString(content);
         t++;
         setState(() {
           _downloadHint = '正在下载 $t / ${tmp.length}';
@@ -406,13 +477,19 @@ class _BookDetailState extends State<BookDetailPage> {
                 ExtStorage.DIRECTORY_DOCUMENTS);
             LogUtil.v(dir);
             file = new File(
-                '$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+                '$dir/${data['name'].trim()}-${data['author'].trim()}.epub');
           } else if (Platform.isMacOS) {
             dir = (await getDownloadsDirectory()).path;
             file = new File(
-                '$dir/${data['name'].trim()}-${data['author'].trim()}.txt');
+                '$dir/${data['name'].trim()}-${data['author'].trim()}.epub');
           }
-          file.writeAsString(content.join());
+          final dataDir = Directory('$tmpDirPath');
+
+          // Manually create a zip of a directory and individual files.
+          var encoder = ZipFileEncoder();
+          encoder.zipDirectory(dataDir,
+              filename:
+                  '$dir/${data['name'].trim()}-${data['author'].trim()}.epub');
           setState(() {
             _downloadHint = '下载成功！';
           });
