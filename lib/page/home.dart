@@ -145,6 +145,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Text(
                                       book['name'],
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                           color: HexColor('#222222'),
                                           fontSize: 15,

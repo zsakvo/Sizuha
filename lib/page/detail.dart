@@ -24,6 +24,7 @@ class _BookDetailState extends State<BookDetailPage> {
   Future _future;
   bool _isDownloading = false;
   String _downloadHint = '正在读取数据……';
+  bool downloadComplete = true;
 
   @override
   void initState() {
@@ -49,7 +50,9 @@ class _BookDetailState extends State<BookDetailPage> {
             leading: InkWell(
               child: Icon(Icons.arrow_back),
               onTap: () {
-                Navigator.pop(context);
+                if (downloadComplete) {
+                  Navigator.pop(context);
+                }
               },
             )),
         body: FutureBuilder(
@@ -96,6 +99,7 @@ class _BookDetailState extends State<BookDetailPage> {
                                       children: [
                                         Text(
                                           data['name'],
+                                          overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                               color: HexColor('#222222'),
                                               fontSize: 16,
@@ -236,9 +240,11 @@ class _BookDetailState extends State<BookDetailPage> {
                                   ),
                                   minWidth: double.infinity,
                                   onPressed: () async {
-                                    setState(() {
-                                      _isDownloading = false;
-                                    });
+                                    if (downloadComplete) {
+                                      setState(() {
+                                        _isDownloading = false;
+                                      });
+                                    }
                                   },
                                 )),
                             Container(
@@ -295,6 +301,7 @@ class _BookDetailState extends State<BookDetailPage> {
   _fetchTXT(data) async {
     _permissionRequest();
     setState(() {
+      downloadComplete = false;
       _isDownloading = true;
     });
     List chapters = [];
@@ -350,6 +357,7 @@ class _BookDetailState extends State<BookDetailPage> {
           file.writeAsString(content.join());
           setState(() {
             _downloadHint = '下载成功！';
+            downloadComplete = true;
           });
         }
       });
@@ -359,6 +367,7 @@ class _BookDetailState extends State<BookDetailPage> {
   _fetchEPUB(data) async {
     _permissionRequest();
     setState(() {
+      downloadComplete = false;
       _isDownloading = true;
     });
     List chapters = [];
@@ -487,6 +496,7 @@ class _BookDetailState extends State<BookDetailPage> {
           encoder.zipDirectory(dataDir, filename: file);
           setState(() {
             _downloadHint = '下载成功！';
+            downloadComplete = true;
           });
         }
       });
