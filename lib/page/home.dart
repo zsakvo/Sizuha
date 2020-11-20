@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_statusbar_manager/flutter_statusbar_manager.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:sizuha/http/api/index.dart';
+import 'package:sizuha/util/render.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -15,7 +16,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List lists = [];
+  Future _future;
+
+  @override
+  void initState() {
+    _future = ApiIndex.fetch();
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() async {
@@ -31,8 +38,6 @@ class _HomePageState extends State<HomePage> {
           NavigationBarStyle.LIGHT);
     }
     super.didChangeDependencies();
-    lists = await ApiIndex.fetch();
-    setState(() {});
   }
 
   @override
@@ -49,8 +54,31 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
         ),
-        body: Column(
-          children: [_buildSearchBar(), _buildRankList()],
+        body: FutureBuilder(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasData) {
+                List books = List.from(snapshot.data);
+                return Column(
+                  children: [_buildSearchBar(), _buildRankList(books)],
+                );
+              } else {
+                return Center(
+                    child: InkWell(
+                  child: Text(
+                    '好像网络请求失败了，点击重试 :)',
+                    style: TextStyle(color: HexColor('#595959'), fontSize: 13),
+                  ),
+                  onTap: () {
+                    _future = ApiIndex.fetch();
+                  },
+                ));
+              }
+            } else {
+              return RenderUtil.renderPlaceholder();
+            }
+          },
         ));
   }
 
@@ -90,93 +118,57 @@ class _HomePageState extends State<HomePage> {
         ));
   }
 
-  Widget _buildRankList() {
+  Widget _buildRankList(books) {
+    List list = books[0]['books'];
     return Container(
         height: ScreenUtil.getScreenH(context) -
             ScreenUtil.getStatusBarH(context) -
             180,
         child: ListView(
-          children: lists.map((list) {
-            return Column(
-              children: [
-                // Container(
-                //   child: Row(
-                //     crossAxisAlignment: CrossAxisAlignment.center,
-                //     children: [
-                //       Text(
-                //         list['title'],
-                //         style: TextStyle(
-                //             color: HexColor('#222222'),
-                //             fontSize: 14,
-                //             fontWeight: FontWeight.bold),
-                //       ),
-                //       ColorFiltered(
-                //           colorFilter: ColorFilter.mode(
-                //               HexColor('#8c8c8c'), BlendMode.srcIn),
-                //           child: Image.asset(
-                //             'assets/img/arrow-right.png',
-                //             width: 24,
-                //           ))
-                //     ],
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   ),
-                //   padding:
-                //       EdgeInsets.only(top: 0, bottom: 10, left: 12, right: 12),
-                // ),
-                Column(
+          children: list.map((book) {
+            return InkWell(
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ...List.from(list['books']).map((book) {
-                      return InkWell(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 16),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: book['cover'],
-                                width: 72,
-                                height: 96,
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 18),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      book['name'],
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          color: HexColor('#222222'),
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          height: 2.0),
-                                    ),
-                                    Text(
-                                      book['author'],
-                                      style: TextStyle(
-                                        color: HexColor('#8c8c8c'),
-                                        fontSize: 14,
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              )
-                            ],
+                    CachedNetworkImage(
+                      imageUrl: book['cover'],
+                      width: 72,
+                      height: 96,
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            book['name'],
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: HexColor('#222222'),
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                height: 2.0),
                           ),
-                        ),
-                        onTap: () {
-                          Navigator.of(context)
-                              .pushNamed('/detail', arguments: {
-                            'url': book['url'],
-                          });
-                        },
-                      );
-                    }).toList(),
-                    SizedBox(height: 10),
+                          Text(
+                            book['author'],
+                            style: TextStyle(
+                              color: HexColor('#8c8c8c'),
+                              fontSize: 14,
+                            ),
+                          )
+                        ],
+                      ),
+                    )
                   ],
-                )
-              ],
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pushNamed('/detail', arguments: {
+                  'url': book['url'],
+                });
+              },
             );
           }).toList(),
         ));

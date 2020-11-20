@@ -48,7 +48,25 @@ class _IndexPageState extends State<IndexPage> {
           onPageChanged: (index) {
             setState(() => _currentIndex = index);
           },
-          children: <Widget>[HomePage(), Container(), Container()],
+          children: <Widget>[
+            HomePage(),
+            Container(
+              child: Center(
+                child: Text(
+                  '这里应该放一个排行榜，但我还没写好 :)',
+                  style: TextStyle(color: HexColor('#595959'), fontSize: 13),
+                ),
+              ),
+            ),
+            Container(
+              child: Center(
+                child: Text(
+                  '这里应该放一些文库内容，但我依旧还没写好 :)',
+                  style: TextStyle(color: HexColor('#595959'), fontSize: 13),
+                ),
+              ),
+            )
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
